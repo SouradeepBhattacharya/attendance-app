@@ -7,10 +7,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="GharSaathi">
 <meta name="theme-color" content="#FDF6EC">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-<link rel="manifest" href="manifest.json">
 <title>GharSaathi</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
@@ -1225,7 +1221,7 @@ let DB={staff:[],attendance:{},salaryPayments:[]};
 function loadDB(){try{const r=localStorage.getItem('gs_v1');if(r)DB=JSON.parse(r);}catch(e){}}
 function saveDB(){
   localStorage.setItem('gs_v1',JSON.stringify(DB));
-  if(gAuth.token) scheduleSyncDebounce();
+  if(gAuth.signedIn) scheduleSyncDebounce();
 }
 
 // ══════════════════════════════════════════════
@@ -1255,12 +1251,18 @@ function confirmResolve(val){
 const GDRIVE_CLIENT_ID='191381854652-dtld086habaf6sfo84updsigm3p88p04.apps.googleusercontent.com';
 const GDRIVE_SCOPE='https://www.googleapis.com/auth/drive.appdata';
 const BACKUP_FILENAME='gharsaathi_backup.json';
-let gAuth={token:null,user:null,signedIn:false};
+let gAuth={
+  token:null,
+  user:JSON.parse(localStorage.getItem('gs_guser')||'null'),
+  signedIn:!!localStorage.getItem('gs_guser')
+};
 let _syncDebounce=null;
 
 function scheduleSyncDebounce(){
   clearTimeout(_syncDebounce);
-  _syncDebounce=setTimeout(()=>{if(gAuth.token)uploadToDrive(true);},5000);
+  _syncDebounce=setTimeout(()=>{
+    if(gAuth.signedIn) uploadToDrive(true);
+  },5000);
 }
 
 function renderBackupPanel(){
